@@ -1,0 +1,25 @@
+{
+  "name": "employee_tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Spikey1289/Employee_Tracker.git"
+  },
+  "author": "Ian Stevenson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Spikey1289/Employee_Tracker/issues"
+  },
+  "homepage": "https://github.com/Spikey1289/Employee_Tracker#readme",
+  "dependencies": {
+    "console.table": "^0.10.0",
+    "dotenv": "^16.4.4",
+    "inquirer": "^9.2.14",
+    "mysql2": "^3.9.1"
+  }
+}
