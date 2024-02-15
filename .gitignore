@@ -2,4 +2,3 @@ Challenge-README
 .env
 node_modules
 .DS_store
-package-lock.json
