@@ -2,3 +2,4 @@ Challenge-README
 .env
 node_modules
 .DS_store
+./db/scratch_query.sql

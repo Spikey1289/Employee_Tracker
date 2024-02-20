@@ -40,6 +40,7 @@ async function main() {
                     }
                     break;
 
+
                 case 'view roles':
 
                     try {
@@ -158,6 +159,8 @@ async function main() {
                         console.log(err);
                     }
                     break;
+
+
                 case 'add an employee':
                     input = {};
                     let managers;
@@ -250,10 +253,11 @@ async function main() {
                     }
                     break;
 
+                // code for updating the employees based on the entered name
                 case 'update an employee':
                     input = {};
                     managers =[];
-                    
+
                     try {
                         managers = await db.query(
                             `select distinct IFNULL(concat(b.first_name, ' ', b.last_name), 'none') as manager
