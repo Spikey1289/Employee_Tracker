@@ -24,7 +24,7 @@ If you do not have mysql installed, or have not set up your MYSQL root password,
     - source db/schema.sql
     - source db/seeds.sql
 - A database of employees should have been created for the index.js to alter, the tables should display in your terminal once they have been made
-- After that, you can open another terminal (or type in 'quit' in your mysql shell) and run 'node index.js'.
+- After that, you can open another terminal (or type in 'quit' in your mysql shell) and then run '`node index.js`'.
 - there will be several options displayed in your terminal in a list. These options are as follows:
     - view departments/roles/employees: all of these options simply allow you to view the tables they reference.
     - add a department/role/employee: these options allow you to add a new item to the referenced tables.
@@ -33,4 +33,4 @@ If you do not have mysql installed, or have not set up your MYSQL root password,
 
 
 ### Link to Video Walkthrough
-[Click me!]()
+[Click me!](https://drive.google.com/file/d/1eSKESE6QWoycWijIvyXa87fgqk2y0nxd/view?usp=sharing)
