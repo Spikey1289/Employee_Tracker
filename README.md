@@ -6,7 +6,7 @@ This is the README for the Employee Tracker challenge of my coding bootcamp. Thi
 ## Things Learned
 Through this challenge, I was able to learn how to use SQL and MYSQL2/MYSQL2-Promise to make an application that can edit tables in a database.
 
-## THIS APPLICATION ASSUMES THAT YOU ALREADY HAVE INSTALLED MYSQL SERVER
+### THIS APPLICATION ASSUMES THAT YOU ALREADY HAVE INSTALLED MYSQL SERVER
 If you do not have mysql installed, or have not set up your MYSQL root password, or have not set up a user/password combo, this application will not work as advertised. If you need to install and set up mysql server, click on this [download link](https://dev.mysql.com/downloads/mysql/), and follow a guide to set up mysql server and set up the legacy authentication.
 
 ### Application Walkthrough
