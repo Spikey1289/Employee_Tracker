@@ -265,6 +265,7 @@ async function main() {
                     managers = null;
                     Roles = null;
                     let employeeUpdate = null;
+                    let employeeID = null;
                     let message = ``;
 
                     try {
@@ -291,6 +292,17 @@ async function main() {
                         message = `${employeeUpdate}'s`;
                     } catch(err) {
                         console.log(err);
+                    }
+
+                    try {
+                        employeeID = await db.query(
+                            `select id
+                            from employees
+                            where concat(employees.first_name, ' ', employees.last_name) = '${employeeUpdate}';`
+                        )
+                        employeeID = employeeID[0][0].id
+                    } catch (err) {
+
                     }
 
                     try {
@@ -360,7 +372,6 @@ async function main() {
                     } catch(err) {
                         console.log(err);
                     }
-                    console.log(input);
 
                     if (input.Manager !== 'NULL' && input.Manager !== '---') {
                         try {
@@ -393,7 +404,7 @@ async function main() {
                             await db.query(
                                 `update employees
                                     set first_name = "${input.FirstName}"
-                                where concat(employees.first_name, ' ', employees.last_name) = '${employeeUpdate}';`
+                                where employees.id = ${employeeID};`
                             );
                             message += ` First Name`
                         }
@@ -401,7 +412,7 @@ async function main() {
                             await db.query(
                                 `update employees
                                     set last_name = "${input.LastName}"
-                                where concat(employees.first_name, ' ', employees.last_name) = '${employeeUpdate}';`
+                                where employees.id = ${employeeID};;`
                             );
                             message += ` Last Name`
                         }
@@ -422,9 +433,9 @@ async function main() {
                             message += ` Manager`
                         }
                         if (input.FirstName !== '' && input.LastName !== '' && input.Role !== '---' && input.Manager !== '---') {
-                            message += ` profile was not updated, as nothing has changed`;
-                        } else {
                             message += ` were/was updated.`;
+                        } else {
+                            message += ` profile was not updated, as nothing has changed`;
                         }
                         console.log(message);
 

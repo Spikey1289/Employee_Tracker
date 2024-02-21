@@ -13,8 +13,11 @@ If you do not have mysql installed, or have not set up your MYSQL root password,
 
 - After downloading the application files, you're going to need to install node js, inquirer, and MYSQL2/Promise.
     - to install node: follow this [link](https://nodejs.org/en/download/package-manager) and follow the directions
-    - to install inquirer: after you have node installed, type 'npm install --save inquirer' in your integrated terminal.
-    - to install MYSQL2-promise: after you have node installed, type 'npm install mysql2-promise --save' in your integrated terminal.
+    - you should only need to then run '`npm i`' in your terminal then, however if the application does not work follow these directions:
+        - to install inquirer: after you have node installed, type '`npm install --save inquirer`' in your integrated terminal.
+        - to install MYSQL2: after you have node installed, type '`npm install mysql2 --save`' in your integrated terminal
+        - to install MYSQL2-promise: after you have node installed, type '`npm install mysql2-promise --save`' in your integrated terminal.
+        - to install dotenv: after you have node installed, type '`npm install dotenv`' in your integrated terminal.
 - After the above steps are completed, you are going to have to log into MYSQL2 in the terminal (mysql -u root -p), then enter your password.
 - Next, Please find the .env.EDIT_ME file, and edit the DB_USER and DB_PASSWORD to be your MySQL root and root password, then rename the file to '.env'.
 - After you have logged into your MySQL shell and edited the .env file, run the following commands:
