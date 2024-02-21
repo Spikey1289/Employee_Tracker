@@ -15,7 +15,9 @@ async function main() {
     let answer = {};
     let dbResponse = {};
     while (keepGoing) {
-        let input = null;
+        let input;
+        let managers;
+        let Roles;
         try{
             answer = await inquirer
                 .prompt(
@@ -46,12 +48,14 @@ async function main() {
                     try {
                         dbResponse = await db.query(
                             `select
-                            role.id,
-                            role.title,
-                            role.salary,
-                            department.name
-                        from role
-                        join department on role.dep_id = department.id;`);
+                                role.id,
+                                role.title,
+                                role.salary,
+                                department.name
+                            from role
+                            join department on role.dep_id = department.id
+                            ORDER BY ID;`
+                        );
                         console.table(dbResponse[0]);
                     } catch (err){
                         console.log(err);
@@ -62,16 +66,18 @@ async function main() {
 
                 case 'view employees':
                     dbResponse = await db.query(
-                    `select 
-                        a.id,
-                        a.first_name,
-                        a.last_name,
-                        IFNULL(b.first_name, '---') as manager,
-                        role.title as role,
-                        role.salary
-                    from employees a
-                    join role on a.role_id = role.id
-                    left join employees b on a.manager_id = b.id;`);
+                        `select
+                            a.id,
+                            a.first_name,
+                            a.last_name,
+                            IFNULL(b.first_name, '---') as manager,
+                            role.title as role,
+                            role.salary
+                        from employees a
+                        join role on a.role_id = role.id
+                        left join employees b on a.manager_id = b.id
+                        ORDER BY ID;`
+                    );
                     console.table(dbResponse[0]);
                     break;
 
@@ -162,8 +168,9 @@ async function main() {
 
 
                 case 'add an employee':
-                    input = {};
-                    let managers;
+                    input = null;
+                    role = null;
+                    managers = null;
 
                     try {
                         managers = await db.query(
@@ -177,10 +184,10 @@ async function main() {
                     }
 
                     try {
-                        dbResponse = await db.query(
+                        Roles = await db.query(
                             `SELECT role.title From role;`
                         );
-                        dbResponse = dbResponse[0].map(value => value.title);
+                        Roles = Roles[0].map(value => value.title);
                     } catch (err) {
                         console.log(err);
                     }
@@ -202,7 +209,7 @@ async function main() {
                                     type: 'list',
                                     name: 'Role',
                                     message: 'please choose the role of this employee',
-                                    choices: dbResponse
+                                    choices: Roles
                                 },
                                 {
                                     type: 'list',
@@ -255,8 +262,48 @@ async function main() {
 
                 // code for updating the employees based on the entered name
                 case 'update an employee':
-                    input = {};
-                    managers =[];
+                    input = null;
+                    managers = null;
+                    Roles = null;
+                    let employeeUpdate = null;
+                    let message = ``;
+
+                    try {
+                        dbResponse = await db.query(
+                           `select concat(employees.first_name, ' ', employees.last_name) as employee
+                            from employees;`
+                        ); 
+                        dbResponse = dbResponse[0].map(value => value.employee);
+                    } catch(err) {
+                        console.log(err);
+                    }
+
+                    try {
+                        employeeUpdate = await inquirer
+                            .prompt(
+                                {
+                                    type: 'list',
+                                    name: 'EmployeeChoice',
+                                    message: 'Select an employee to update',
+                                    choices: dbResponse
+                                }
+                            ); 
+                        employeeUpdate = employeeUpdate.EmployeeChoice;
+                        message = `${employeeUpdate}'s`;
+                    } catch(err) {
+                        console.log(err);
+                    }
+
+                    try {
+                        dbResponse = await db.query(
+                            `select * from employees
+                            where concat(employees.first_name, ' ', employees.last_name) = '${employeeUpdate}';`
+                        );
+                        dbResponse = dbResponse[0];
+                        console.table(dbResponse);
+                    } catch(err) {
+                        console.log(err);
+                    }
 
                     try {
                         managers = await db.query(
@@ -264,17 +311,125 @@ async function main() {
                                 from employees a
                             left join employees b on a.manager_id = b.id;`
                         );
+                        managers[0].unshift({ manager: '---' });
                         managers = managers[0].map(value => value.manager);
                     } catch (err) {
                         console.log(err);
                     }
 
                     try {
-                        dbResponse = await db.query(
+                        Roles = await db.query(
                             `SELECT role.title From role;`
                         );
-                        dbResponse = dbResponse[0].map(value => value.title);
+                        Roles[0].unshift({ title: '---' });
+                        Roles = Roles[0].map(value => value.title);
                     } catch (err) {
+                        console.log(err);
+                    }
+
+                    
+
+                    try {
+                        input = await inquirer
+                            .prompt([
+                                {
+                                    type: 'input',
+                                    name: 'FirstName',
+                                    message: 'please enter the updated First Name (enter nothing if unchanged)'
+                                },
+                                {
+                                    type: 'input',
+                                    name: 'LastName',
+                                    message: 'please enter the updated Last Name (enter nothing if unchanged)'
+                                },
+                                {
+                                    type: 'list',
+                                    name: 'Role',
+                                    message: 'Please choose the updated Role (--- if unchanged)',
+                                    choices: Roles
+                                },
+                                {
+                                    type: 'list',
+                                    name: 'Manager',
+                                    message: 'please choose the updated manager of this employee, if they have one (--- if unchanged)',
+                                    choices: managers
+                                }
+                            ]);
+                        if (input.Manager === 'none') {
+                            input.Manager = 'NULL';
+                        }
+                    } catch(err) {
+                        console.log(err);
+                    }
+                    console.log(input);
+
+                    if (input.Manager !== 'NULL' && input.Manager !== '---') {
+                        try {
+                            dbResponse = await db.query(
+                                `select employees.id
+                                    from employees
+                                where concat(employees.first_name, ' ', employees.last_name) = '${input.Manager}';`
+                            )
+                            input.Manager = dbResponse[0][0].id;
+                        } catch (err) {
+                        console.log(err);
+                        }
+                    }
+
+                    if (input.Role !== 'NULL' && input.Role !== '---') {
+                        try {
+                            dbResponse = await db.query(
+                                `select role.id
+                                from role
+                                where role.title = '${input.Role}';`
+                            )
+                            input.Role = dbResponse[0][0].id;
+                        } catch (err) {
+                            console.log(err);
+                        }
+                    }
+
+                    try{
+                        if (input.FirstName !== '') {
+                            await db.query(
+                                `update employees
+                                    set first_name = "${input.FirstName}"
+                                where concat(employees.first_name, ' ', employees.last_name) = '${employeeUpdate}';`
+                            );
+                            message += ` First Name`
+                        }
+                        if (input.LastName !== '') {
+                            await db.query(
+                                `update employees
+                                    set last_name = "${input.LastName}"
+                                where concat(employees.first_name, ' ', employees.last_name) = '${employeeUpdate}';`
+                            );
+                            message += ` Last Name`
+                        }
+                        if (input.Role !== '---') {
+                            await db.query(
+                                `update employees
+                                    set role_id = "${input.Role}"
+                                where concat(employees.first_name, ' ', employees.last_name) = '${employeeUpdate}';`
+                            );
+                            message += ` Role`
+                        }
+                        if (input.Manager !== '---') {
+                            await db.query(
+                                `update employees
+                                    set manager_id = "${input.Manager}"
+                                where concat(employees.first_name, ' ', employees.last_name) = '${employeeUpdate}';`
+                            );
+                            message += ` Manager`
+                        }
+                        if (input.FirstName !== '' && input.LastName !== '' && input.Role !== '---' && input.Manager !== '---') {
+                            message += ` profile was not updated, as nothing has changed`;
+                        } else {
+                            message += ` were/was updated.`;
+                        }
+                        console.log(message);
+
+                    } catch(err) {
                         console.log(err);
                     }
 
