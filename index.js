@@ -412,7 +412,7 @@ async function main() {
                             await db.query(
                                 `update employees
                                     set last_name = "${input.LastName}"
-                                where employees.id = ${employeeID};;`
+                                where employees.id = ${employeeID};`
                             );
                             message += ` Last Name`
                         }
@@ -420,7 +420,7 @@ async function main() {
                             await db.query(
                                 `update employees
                                     set role_id = "${input.Role}"
-                                where concat(employees.first_name, ' ', employees.last_name) = '${employeeUpdate}';`
+                                where employees.id = ${employeeID};`
                             );
                             message += ` Role`
                         }
@@ -428,7 +428,7 @@ async function main() {
                             await db.query(
                                 `update employees
                                     set manager_id = "${input.Manager}"
-                                where concat(employees.first_name, ' ', employees.last_name) = '${employeeUpdate}';`
+                                where employees.id = ${employeeID};`
                             );
                             message += ` Manager`
                         }
