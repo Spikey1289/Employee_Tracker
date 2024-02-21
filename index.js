@@ -3,6 +3,7 @@ const inquirer = require('inquirer');
 require('dotenv').config();
 
 async function main() {
+        //connects to the local database if the .env file was filled out correctly
         const db = await mysql.createConnection({
             host: process.env.HOST,
             database: process.env.DB_NAME,
@@ -13,10 +14,14 @@ async function main() {
     let keepGoing = true;
     let answer = {};
     let dbResponse = {};
+
+    // the main loop of the program, if keepgoing is false (which it is set to in the 'quit' case), the loop (application) stops running.
     while (keepGoing) {
         let input;
         let managers;
         let Roles;
+
+        // prompts the user for what they want to do with the database/tables
         try{
             answer = await inquirer
                 .prompt(
@@ -31,7 +36,9 @@ async function main() {
             console.log(err);
         }
 
+            //the heart of the program, responds to the above prompt by making sql queries for the corresponding information or edits
             switch (answer.choice) {
+                // uses an sql select query to log a table of departments in the console
                 case 'view departments':
                     try{
                         dbResponse = await db.query('SELECT * from department;');
@@ -41,7 +48,7 @@ async function main() {
                     }
                     break;
 
-
+                //uses an sql select/join to log a table of roles in the console
                 case 'view roles':
 
                     try {
@@ -62,7 +69,7 @@ async function main() {
 
                     break;
 
-
+                //uses an sql select/left join to log a table of employees in the console
                 case 'view employees':
                     dbResponse = await db.query(
                         `select
@@ -80,8 +87,9 @@ async function main() {
                     console.table(dbResponse[0]);
                     break;
 
-
+                //uses an inquirer.prompt to get the name of the department, then an sql query to insert the new department into the table
                 case 'add a department':
+                    // inquirer.prompt to get the name of the department
                     try{
                         input = await inquirer
                             .prompt(
@@ -96,6 +104,7 @@ async function main() {
                         console.log(err);
                     }
 
+                    // sql query to insert the new department into the table
                     try {
                         await db.query(
                             `insert into department (name)
@@ -107,9 +116,17 @@ async function main() {
                     }
                     break;
 
-
+                /*
+                calls the database to get the name of a department, 
+                then uses an inquirer.prompt to get the name of the role, its pay, and which department it's in,
+                then uses an sql query to change the department to its corresponding department.id for the database,
+                finally uses a sql query to insert the new role into the table.
+                */
                 case 'add a role':
+                    // variable to store the user input
                     input = {};
+
+                    //query to get the department names from the database for use in assigning only the available databases to the department category
                     try{
                         dbResponse = await db.query(
                             `SELECT department.name From department;`
@@ -119,6 +136,7 @@ async function main() {
                         console.log(err);
                     }
 
+                    // inquirer.prompt to get the name of the role, its pay, and which department it's in
                     try {
                         input = await inquirer
                             .prompt([
@@ -143,6 +161,7 @@ async function main() {
                         console.log(err);
                     }
 
+                    // sql query to change the department to its corresponding department.id for the database
                     try {
                         dbResponse = await db.query(
                             `select department.id
@@ -154,6 +173,7 @@ async function main() {
                         console.log(err);
                     }
 
+                    // sql query to insert the new role into the table.
                     try{
                         await db.query(
                             `insert into role (title, salary, dep_id)
@@ -165,12 +185,20 @@ async function main() {
                     }
                     break;
 
-
+                /*
+                queries the database to get the list of managers,
+                then queries the database to get the list of roles,
+                then uses an inquirer.prompt to get the first name, last name, role, and manager (if they have one) of the new employee,
+                then uses a simple reassignment to make an input null if none was selected for manager,
+                then uses two queries to change the names of the roles and managers from the users input to their corresponding ids in the database,
+                finally, uses a query to insert the formatted input into the database.
+                */
                 case 'add an employee':
                     input = null;
                     role = null;
                     managers = null;
-
+                    
+                    //  queries the database to get the list of managers
                     try {
                         managers = await db.query(
                             `select distinct IFNULL(concat(b.first_name, ' ', b.last_name), 'none') as manager
@@ -182,6 +210,7 @@ async function main() {
                         console.log(err);
                     }
 
+                    // queries the database to get the list of roles
                     try {
                         Roles = await db.query(
                             `SELECT role.title From role;`
@@ -190,7 +219,8 @@ async function main() {
                     } catch (err) {
                         console.log(err);
                     }
-
+                    
+                    // then uses an inquirer.prompt to get the first name, last name, role, and manager(if they have one) of the new employee
                     try {
                         input = await inquirer
                             .prompt([
@@ -217,6 +247,7 @@ async function main() {
                                     choices: managers
                                 }
                             ]);
+                        // simple reassignment to make an input null if none was selected for manager
                         if (input.Manager === 'none') {
                             input.Manager = 'NULL';
                         }
@@ -224,6 +255,7 @@ async function main() {
                         console.log(err);
                     }
 
+                    // query to change the name of the role from the users input to its corresponding id in the database
                     try {
                         dbResponse = await db.query(
                             `select role.id
@@ -235,6 +267,7 @@ async function main() {
                         console.log(err);
                     }
 
+                    // query to change the name of the manager from the users input to its corresponding id in the database
                     try {
                         if(input.Manager !== 'NULL'){
                             dbResponse = await db.query(
@@ -248,6 +281,7 @@ async function main() {
                         console.log(err);
                     }
 
+                    // query to insert the formatted input into the database
                     try {
                         await db.query(
                             `insert into employees(first_name, last_name, role_id, manager_id)
@@ -259,7 +293,20 @@ async function main() {
                     }
                     break;
 
-                // code for updating the employees based on the entered name
+                /*
+                queries the database to get the list of employees for the user to choose from to update,
+                then inquirer.prompt's the user to chose an employee to update (the name and id of the employee is saved in 2 variables)
+                then queries the database for all of the relevant data from the employees table to display for the user,
+                then queries the database for all the managers the user can chose from,
+                then queries the database for all the roles the user can chose from,
+                then inquirer.prompt's the user to change the first name, last name, role, and manager. 
+                    if the field is left blank or if '---' is chosen, the corresponding section is unchanged (e.g.: if the last name changed but the first name didn't),
+                then uses a simple reassignment to make an input null if none was selected for manager,
+                then uses an if() to change the selected manager to their manager_id to input into the database. leaves it as null if none was chosen or unchanged if '---' was chosen.
+                then uses an if() to change the selected role to their role_id to input into the database. leaves it unchanged if '---' was chosen.
+                then uses a series of if() statements to check if a field was left blank, or if it was changed. If the field was changed, then it is updated with a query.
+                finally, puts out a message saying what was changed during the update.
+                */
                 case 'update an employee':
                     input = null;
                     managers = null;
@@ -268,6 +315,7 @@ async function main() {
                     let employeeID = null;
                     let message = ``;
 
+                    // queries the database to get the list of employees for the user to choose from to update
                     try {
                         dbResponse = await db.query(
                            `select concat(employees.first_name, ' ', employees.last_name) as employee
@@ -278,6 +326,7 @@ async function main() {
                         console.log(err);
                     }
 
+                    // inquirer.prompt's the user to chose an employee to update, and saves the employees full name for future use
                     try {
                         employeeUpdate = await inquirer
                             .prompt(
@@ -294,6 +343,7 @@ async function main() {
                         console.log(err);
                     }
 
+                    // saves the employee id for later use
                     try {
                         employeeID = await db.query(
                             `select id
@@ -305,6 +355,7 @@ async function main() {
 
                     }
 
+                    //queries the database for all of the relevant data from the employees table to display for the user
                     try {
                         dbResponse = await db.query(
                             `select * from employees
@@ -316,6 +367,7 @@ async function main() {
                         console.log(err);
                     }
 
+                    // queries the database for all the managers the user can chose from
                     try {
                         managers = await db.query(
                             `select distinct IFNULL(concat(b.first_name, ' ', b.last_name), 'none') as manager
@@ -328,6 +380,7 @@ async function main() {
                         console.log(err);
                     }
 
+                    // queries the database for all the roles the user can chose from
                     try {
                         Roles = await db.query(
                             `SELECT role.title From role;`
@@ -337,9 +390,9 @@ async function main() {
                     } catch (err) {
                         console.log(err);
                     }
-
                     
-
+                    // prompts the user to change the first name, last name, role, and manager
+                        // if the field is left blank or if '---' is chosen, the corresponding section is unchanged
                     try {
                         input = await inquirer
                             .prompt([
@@ -366,6 +419,7 @@ async function main() {
                                     choices: managers
                                 }
                             ]);
+                        // a simple reassignment to make an input null if none was selected for manager
                         if (input.Manager === 'none') {
                             input.Manager = 'NULL';
                         }
@@ -373,6 +427,7 @@ async function main() {
                         console.log(err);
                     }
 
+                    // changes the selected manager to its manager_id to input into the database. leaves it as null if none was chosen or unchanged if '---' was chosen.
                     if (input.Manager !== 'NULL' && input.Manager !== '---') {
                         try {
                             dbResponse = await db.query(
@@ -385,8 +440,9 @@ async function main() {
                         console.log(err);
                         }
                     }
-
-                    if (input.Role !== 'NULL' && input.Role !== '---') {
+                    
+                    // changes the selected role to its role_id to input into the database. leaves it unchanged if '---' was chosen.
+                    if (input.Role !== '---') {
                         try {
                             dbResponse = await db.query(
                                 `select role.id
@@ -399,7 +455,9 @@ async function main() {
                         }
                     }
 
+                    // a series of if() statements to check if a field was left blank, or if it was changed. If the field was changed, then it is updated with a query.
                     try{
+                        // checks if the first name was changed, and updates it if first name was changed
                         if (input.FirstName !== '') {
                             await db.query(
                                 `update employees
@@ -408,6 +466,7 @@ async function main() {
                             );
                             message += ` First Name`
                         }
+                        // checks if the last name was changed, and updates it if last name was changed
                         if (input.LastName !== '') {
                             await db.query(
                                 `update employees
@@ -416,6 +475,7 @@ async function main() {
                             );
                             message += ` Last Name`
                         }
+                        // checks if the role was changed, and updates it if role was changed
                         if (input.Role !== '---') {
                             await db.query(
                                 `update employees
@@ -424,6 +484,7 @@ async function main() {
                             );
                             message += ` Role`
                         }
+                        // checks if the manager was changed, and updates it if manager was changed
                         if (input.Manager !== '---') {
                             await db.query(
                                 `update employees
@@ -432,25 +493,28 @@ async function main() {
                             );
                             message += ` Manager`
                         }
+                        // if nothing was changed, updates the end message to reflect that nothing was changed
                         if (input.FirstName !== '' && input.LastName !== '' && input.Role !== '---' && input.Manager !== '---') {
                             message += ` were/was updated.`;
                         } else {
                             message += ` profile was not updated, as nothing has changed`;
                         }
                         console.log(message);
-
                     } catch(err) {
                         console.log(err);
                     }
 
                     break;
 
+                // ends the loop that is generating the choices for the user to chose from
                 case 'quit':
                     keepGoing = false;
                     break;
             }
         }
-        db.end();
-    }
+        // closes the database
+    db.end();
+}
 
+//runs the main function
 main();

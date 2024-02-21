@@ -20,6 +20,7 @@ If you do not have mysql installed, or have not set up your MYSQL root password,
         - to install dotenv: after you have node installed, type '`npm install dotenv`' in your integrated terminal.
 - After the above steps are completed, you are going to have to log into MYSQL2 in the terminal (mysql -u root -p), then enter your password.
 - Next, Please find the .env.EDIT_ME file, and edit the DB_USER and DB_PASSWORD to be your MySQL root and root password, then rename the file to '.env'.
+    - please MAKE SURE TO FOLLOW THE ABOVE STEP, I didn't do it during the tutorial because I already have one in my project folder that has not been pushed up to github, but if you don't fill it out correctly the application WILL NOT RUN!
 - After you have logged into your MySQL shell and edited the .env file, run the following commands:
     - source db/schema.sql
     - source db/seeds.sql
