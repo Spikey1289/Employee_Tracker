@@ -1,7 +1,6 @@
 const mysql = require('mysql2/promise');
 const inquirer = require('inquirer');
 require('dotenv').config();
-require('./assets/classes');
 
 async function main() {
         const db = await mysql.createConnection({

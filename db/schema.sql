@@ -1,5 +1,3 @@
--- Plan to make the database name something the *user supplies*
-
 -- Deletes Company_Employees if exists
 DROP DATABASE IF EXISTS Company_Employees;
 

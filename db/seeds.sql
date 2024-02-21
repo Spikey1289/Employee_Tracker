@@ -54,3 +54,12 @@ INSERT INTO employees(first_name, last_name, role_id, manager_id)
         ('IPhone', 'Five', 15, 14),
         ('Nirvana', 'Doe', 16, 14),
         ('Walter', 'White', 16, 14);
+
+
+SELECT DATABASE();
+
+SHOW tables;
+
+SELECT * from department;
+SELECT * from role;
+SELECT * from employees;
